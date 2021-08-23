@@ -1,7 +1,7 @@
 #!/bin/bash
 
 # Fabian Nino
-# CPSC 140
+# CPSC 240
 # Assignment 1
 # 2021-08-22
 # falenire@csu.fullerton.edu
