@@ -10,6 +10,7 @@ extern printf
 extern scanf
 extern fgets
 extern stdin
+extern strlen
 global hello
 
 segment .data
@@ -18,9 +19,8 @@ align 16
 
 hello.initial_prompt db "Please enter your first and last names: ", 0
 hello.title_promt db "Please enter your title (Ms, Mr, Engineer, Programmer, Mathematician, Genius, etc): ", 0
-hello.greeting db "Hello ", 0
-hello.day_prompt db ". How has your day been so far? ", 0
-hello.good_day db " is really nice.", 10, 0
+hello.greeting db "Hello %s %s. How has your day been so far? ", 0
+hello.good_day db "%s is really nice.", 10, 0
 hello.final_message db "This concludes the demonstration of the Hello program written in x86 assembly.", 10, 0
 
 stringformat db "%s", 0
@@ -38,8 +38,24 @@ segment .text
 
 hello:
 
-    push       rbp
-    mov        rbp, rsp
+    push rbp
+    mov rbp, rsp
+    push rbx
+    push rcx
+    push rdx
+    push rdi
+    push rsi
+    push r8
+    push r9
+    push r10
+    push r11
+    push r12
+    push r13
+    push r14
+    push r15
+    pushf
+
+    ; mov        rbp, rsp
 
     ; Ask for user's name
     mov qword   rax, 0
@@ -48,11 +64,20 @@ hello:
     call        printf
 
     ; Store user's name from input
-    mov qword rax, 0
-    mov       rdi, hello.name
-    mov       rsi, 32
-    mov       rdx, [stdin]
-    call      fgets
+    mov qword   rax, 0
+    mov         rdi, hello.name
+    mov         rsi, 32
+    mov         rdx, [stdin]
+    call        fgets
+
+    ; get name's length
+    mov qword   rax, 0
+    mov         rdi, hello.name
+    call        strlen
+    mov         r13, rax
+
+    ; change return character given by the user for null character
+    mov qword   [hello.name + r13 - 1], 0
 
     ; Ask for user's title
     mov qword   rax, 0
@@ -67,28 +92,20 @@ hello:
     mov         rdx, [stdin]
     call        fgets
 
+    ; get title's length
+    mov qword   rax, 0
+    mov         rdi, hello.title
+    call        strlen
+    mov         r13, rax
+
+    ; change return character given by the user for null character
+    mov qword   [hello.title + r13 - 1], 0
+
     ; Print greeting to user
     mov         rax, 0
-    mov         rdi, stringformat
-    mov         rsi, .greeting
-    call        printf
-
-    ; Print user's name
-    mov         rax, 0
-    mov         rdi, stringformat
+    mov         rdi, .greeting
     mov         rsi, .name
-    call        printf
-
-    ; Print user's title
-    mov         rax, 0
-    mov         rdi, stringformat
-    mov         rsi, .title
-    call        printf
-
-    ; Ask user for his day
-    mov         rax, 0
-    mov         rdi, stringformat
-    mov         rsi, .day_prompt
+    mov         r8, .title
     call        printf
 
     ; Store user's day info from input
@@ -98,16 +115,19 @@ hello:
     mov         rdx, [stdin]
     call        fgets
 
+    ; get users's day length
+    mov qword   rax, 0
+    mov         rdi, hello.day
+    call        strlen
+    mov         r13, rax
+
+    ; change return character given by the user for null character
+    mov qword   [hello.day + r13 - 1], 0
+
     ; Print user's day info
     mov         rax, 0
-    mov         rdi, stringformat
+    mov         rdi, .good_day
     mov         rsi, .day
-    call        printf
-
-    ; Let user know his day is pretty nice
-    mov         rax, 0
-    mov         rdi, stringformat
-    mov         rsi, .good_day
     call        printf
 
     ; Give the user our farewell
@@ -122,5 +142,20 @@ hello:
     movsd       xmm0, [rsp]
     pop         rax
 
-pop        rbp
+popf
+pop r15
+pop r14
+pop r13
+pop r12
+pop r11
+pop r10
+pop r9
+pop r8
+pop rsi
+pop rdi
+pop rdx
+pop rcx
+pop rbx
+pop rbp
+
 ret
